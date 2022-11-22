@@ -1,8 +1,15 @@
 package calculator;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
 public class Calculator extends JFrame {
+    private static final char additionSymbol = '\u002B';
+    private static final char subtractionSymbol = '-';
+    private static final char multiplicationSymbol = '\u00D7';
+    private static final char divisionSymbol = '\u00F7';
 
     public Calculator() {
         super("Calculator");
@@ -15,152 +22,296 @@ public class Calculator extends JFrame {
     }
 
     private void initComponents() {
-        JTextField EquationTextField = new JTextField();
-        EquationTextField.setBounds(30, 20, 200, 30);
-        EquationTextField.setName("EquationTextField");
-        EquationTextField.setHorizontalAlignment(SwingConstants.CENTER);
-        add(EquationTextField);
+        JLabel EquationLabel = new JLabel();
+        EquationLabel.setBounds(70, 55, 200, 50);
+        EquationLabel.setName("EquationLabel");
+        EquationLabel.setForeground(Color.GREEN);
+        EquationLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(EquationLabel);
+        JLabel ResultLabel = new JLabel();
+        ResultLabel.setBounds(70, 0, 200, 50);
+        ResultLabel.setName("ResultLabel");
+        Font font = new Font("Courier", Font.BOLD, 25);
+        ResultLabel.setFont(font);
+        ResultLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(ResultLabel);
+        JButton Dot = new JButton(".");
+        Dot.setBounds(10, 320, 70, 50);
+        Dot.setName("Dot");
+        add(Dot);
         JButton Zero = new JButton("0");
-        Zero.setBounds(90, 220, 30, 30);
+        Zero.setBounds(80, 320, 70, 50);
         Zero.setName("Zero");
         add(Zero);
         JButton Equals = new JButton("=");
         Equals.setName("Equals");
-        Equals.setBounds(130, 220, 30, 30);
+        Equals.setBounds(150, 320, 70, 50);
         add(Equals);
         JButton Subtract = new JButton("-");
         Subtract.setName("Subtract");
-        Subtract.setBounds(170, 220, 30, 30);
+        Subtract.setBounds(220, 320, 70, 50);
         add(Subtract);
         JButton One = new JButton("1");
-        One.setBounds(50, 170, 30, 30);
+        One.setBounds(10, 265, 70, 50);
         One.setName("One");
         add(One);
         JButton Two = new JButton("2");
-        Two.setBounds(90, 170, 30, 30);
+        Two.setBounds(80, 265, 70, 50);
         Two.setName("Two");
         add(Two);
         JButton Three = new JButton("3");
-        Three.setBounds(130, 170, 30, 30);
+        Three.setBounds(150, 265, 70, 50);
         Three.setName("Three");
         add(Three);
         JButton Add = new JButton("+");
         Add.setName("Add");
-        Add.setBounds(170, 170, 30, 30);
+        Add.setBounds(220, 265, 70, 50);
         add(Add);
         JButton Four = new JButton("4");
-        Four.setBounds(50, 120, 30, 30);
+        Four.setBounds(10, 210, 70, 50);
         Four.setName("Four");
         add(Four);
         JButton Five = new JButton("5");
-        Five.setBounds(90, 120, 30, 30);
+        Five.setBounds(80, 210, 70, 50);
         Five.setName("Five");
         add(Five);
         JButton Six = new JButton("6");
-        Six.setBounds(130, 120, 30, 30);
+        Six.setBounds(150, 210, 70, 50);
         Six.setName("Six");
         add(Six);
         JButton Multiply = new JButton("x");
         Multiply.setName("Multiply");
-        Multiply.setBounds(170, 120, 30, 30);
+        Multiply.setBounds(220, 210, 70, 50);
         add(Multiply);
         JButton Seven = new JButton("7");
-        Seven.setBounds(50, 70, 30, 30);
+        Seven.setBounds(10, 155, 70, 50);
         Seven.setName("Seven");
         add(Seven);
         JButton Eight = new JButton("8");
-        Eight.setBounds(90, 70, 30, 30);
+        Eight.setBounds(80, 155, 70, 50);
         Eight.setName("Eight");
         add(Eight);
         JButton Nine = new JButton("9");
-        Nine.setBounds(130, 70, 30, 30);
+        Nine.setBounds(150, 155, 70, 50);
         Nine.setName("Nine");
         add(Nine);
         JButton Divide = new JButton("/");
         Divide.setName("Divide");
-        Divide.setBounds(170, 70, 30, 30);
+        Divide.setBounds(220, 155, 70, 50);
         add(Divide);
+        JButton Clear = new JButton("C");
+        Clear.setBounds(150, 100, 70, 50);
+        Clear.setName("Clear");
+        add(Clear);
+        JButton Delete = new JButton("Del");
+        Delete.setBounds(220, 100, 70, 50);
+        Delete.setName("Delete");
+        add(Delete);
+
         Equals.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            if (data.contains("+")) {
-                String[] valuesInt = data.split("\\+");
-                int resultExpression = Integer.parseInt(valuesInt[0]) + Integer.parseInt(valuesInt[1]);
-                EquationTextField.setText(data + "=" + resultExpression);
-            } else if (data.contains("-")) {
-                String[] valuesInt = data.split("-");
-                int resultExpression = Integer.parseInt(valuesInt[0]) - Integer.parseInt(valuesInt[1]);
-                EquationTextField.setText(data + "=" + resultExpression);
+                    String data = EquationLabel.getText();
+                    ArrayList<String> infixExpression = infixParse(data);
+                    ArrayList<String> postfixExpression = infixToPostfixConvertor(infixExpression);
+                    String resultExpression = calculatePostfixExpression(postfixExpression);
+                    ResultLabel.setText(resultExpression);
+                }
 
-            } else if (data.contains("x")) {
-                String[] valuesInt = data.split("x");
-                int resultExpression = Integer.parseInt(valuesInt[0]) * Integer.parseInt(valuesInt[1]);
-                EquationTextField.setText(data + "=" + resultExpression);
+        );
+        Clear.addActionListener(e -> EquationLabel.setText(""));
+        Delete.addActionListener(e ->
 
-            } else if (data.contains("/")) {
-                String[] valuesInt = data.split("/");
-                int resultExpression = Integer.parseInt(valuesInt[0]) / Integer.parseInt(valuesInt[1]);
-                EquationTextField.setText(data + "=" + resultExpression);
-
+        {
+            String data = EquationLabel.getText();
+            if (data.length() > 0) {
+                EquationLabel.setText(data.substring(0, data.length() - 1));
             }
 
         });
-        One.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "1");
+        One.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "1");
         });
-        Two.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "2");
+        Two.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "2");
         });
-        Three.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "3");
+        Three.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "3");
         });
-        Four.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "4");
+        Four.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "4");
         });
-        Five.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "5");
+        Five.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "5");
         });
-        Six.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "6");
+        Six.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "6");
         });
-        Seven.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "7");
+        Seven.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "7");
         });
-        Eight.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "8");
+        Eight.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "8");
         });
-        Nine.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "9");
+        Nine.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "9");
         });
-        Zero.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "0");
+        Zero.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + "0");
         });
-        Add.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "+");
+        Add.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + additionSymbol);
         });
-        Subtract.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "-");
+        Subtract.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + subtractionSymbol);
         });
-        Divide.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "/");
+        Divide.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + divisionSymbol);
         });
-        Multiply.addActionListener(e -> {
-            String data = EquationTextField.getText();
-            EquationTextField.setText(data + "x");
+        Multiply.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + multiplicationSymbol);
+        });
+        Dot.addActionListener(e ->
+
+        {
+            String data = EquationLabel.getText();
+            EquationLabel.setText(data + ".");
         });
     }
 
+    private ArrayList<String> infixParse(String data) {
+        ArrayList<String> resultArr = new ArrayList<>();
+        char[] dataInChar = data.toCharArray();
+        StringBuilder tempNumber = new StringBuilder();
+        for (char c : dataInChar) {
+            if (precedenceOfOperatorSign(String.valueOf(c)) == 0) {
+                tempNumber.append(c);
+            } else {
 
+                resultArr.add(tempNumber.toString());
+                resultArr.add(String.valueOf(c));
+                tempNumber = new StringBuilder();
+            }
+        }
+        if (!tempNumber.isEmpty()) {
+            resultArr.add(tempNumber.toString());
+        }
+        return resultArr;
+    }
+
+
+    private ArrayList<String> infixToPostfixConvertor(ArrayList<String> expression) {
+        Stack<String> stackStr = new Stack<>();
+        ArrayList<String> resultStrArr = new ArrayList<>();
+
+        for (int i = 0; i < expression.size(); i++) {
+            String currentStr = expression.get(i);
+            int precedenceOperator = precedenceOfOperatorSign(currentStr);
+            int precedenceOfStackOperator = stackStr.isEmpty() ? 0 : precedenceOfOperatorSign(stackStr.peek());
+            if (precedenceOperator != 0) {
+                if (stackStr.isEmpty()) {
+                    stackStr.push(currentStr);
+                } else if (precedenceOperator > precedenceOfStackOperator) {
+                    stackStr.push(currentStr);
+                } else if (precedenceOperator < precedenceOfStackOperator) {
+                    resultStrArr.add(String.valueOf(stackStr.pop()));
+                    i--;
+                } else {
+                    resultStrArr.add(String.valueOf(stackStr.pop()));
+                    stackStr.push(currentStr);
+                }
+            } else {
+                resultStrArr.add(currentStr);
+            }
+        }
+        while (!stackStr.isEmpty()) {
+            resultStrArr.add(String.valueOf(stackStr.pop()));
+        }
+        return resultStrArr;
+    }
+
+
+    private int precedenceOfOperatorSign(String str) {
+        switch (str.toCharArray()[0]) {
+            case subtractionSymbol, additionSymbol -> {
+                return 1;
+            }
+            case multiplicationSymbol, divisionSymbol -> {
+                return 2;
+            }
+            default -> {
+                return 0;
+            }
+        }
+    }
+
+    private String calculatePostfixExpression(ArrayList<String> expression) {
+        Stack<Double> stackDouble = new Stack<>();
+        for (String currentStr : expression
+        ) {
+            if (precedenceOfOperatorSign(currentStr) == 0) {
+                stackDouble.push(Double.parseDouble(currentStr));
+            } else {
+                double number1 = stackDouble.pop();
+                double number2 = stackDouble.pop();
+                double result = 0;
+                switch (currentStr.toCharArray()[0]) {
+                    case additionSymbol -> result = number2 + number1;
+                    case subtractionSymbol -> result = number2 - number1;
+                    case multiplicationSymbol -> result = number2 * number1;
+                    case divisionSymbol -> result = number2 / number1;
+                }
+                stackDouble.push(result);
+
+            }
+        }
+
+        double resultNumber = stackDouble.pop();
+        if (resultNumber % 1 == 0) {
+            return String.valueOf((int) resultNumber);
+        }
+        return String.valueOf(resultNumber);
+    }
 }
+
+
