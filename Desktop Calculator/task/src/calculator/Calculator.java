@@ -25,7 +25,7 @@ public class Calculator extends JFrame {
         JLabel EquationLabel = new JLabel();
         EquationLabel.setBounds(70, 55, 200, 50);
         EquationLabel.setName("EquationLabel");
-        EquationLabel.setForeground(Color.GREEN);
+        EquationLabel.setForeground(Color.GREEN.darker());
         EquationLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         add(EquationLabel);
         JLabel ResultLabel = new JLabel();
@@ -110,7 +110,16 @@ public class Calculator extends JFrame {
 
         Equals.addActionListener(e -> {
                     String data = EquationLabel.getText();
+                    if (data.contains(divisionSymbol + "0")) {
+                        EquationLabel.setForeground(Color.RED.darker());
+                        return;
+                    }
                     ArrayList<String> infixExpression = infixParse(data);
+                    EquationLabel.setText(infixArrToStr(infixExpression));
+                    if (isOperator(infixExpression.get(infixExpression.size() - 1))) {
+                        EquationLabel.setForeground(Color.RED.darker());
+                        return;
+                    }
                     ArrayList<String> postfixExpression = infixToPostfixConvertor(infixExpression);
                     String resultExpression = calculatePostfixExpression(postfixExpression);
                     ResultLabel.setText(resultExpression);
@@ -191,45 +200,88 @@ public class Calculator extends JFrame {
 
         {
             String data = EquationLabel.getText();
-            EquationLabel.setText(data + additionSymbol);
+            if (data.isEmpty()) {
+                return;
+            }
+            if (isLastSymbolOperator(data)) {
+                data = data.substring(0, data.length() - 1);
+            }
+            ArrayList<String> infixExpression = infixParse(data + additionSymbol);
+            EquationLabel.setText(infixArrToStr(infixExpression));
         });
         Subtract.addActionListener(e ->
 
         {
             String data = EquationLabel.getText();
-            EquationLabel.setText(data + subtractionSymbol);
+            if (data.isEmpty()) {
+                return;
+            }
+            if (isLastSymbolOperator(data)) {
+                data = data.substring(0, data.length() - 1);
+            }
+
+            ArrayList<String> infixExpression = infixParse(data + subtractionSymbol);
+            EquationLabel.setText(infixArrToStr(infixExpression));
         });
         Divide.addActionListener(e ->
 
         {
             String data = EquationLabel.getText();
-            EquationLabel.setText(data + divisionSymbol);
+            if (data.isEmpty()) {
+                return;
+            }
+            if (isLastSymbolOperator(data)) {
+                data = data.substring(0, data.length() - 1);
+            }
+            ArrayList<String> infixExpression = infixParse(data + divisionSymbol);
+            EquationLabel.setText(infixArrToStr(infixExpression));
         });
         Multiply.addActionListener(e ->
 
         {
             String data = EquationLabel.getText();
-            EquationLabel.setText(data + multiplicationSymbol);
+            if (data.isEmpty()) {
+                return;
+            }
+            if (isLastSymbolOperator(data)) {
+                data = data.substring(0, data.length() - 1);
+            }
+            ArrayList<String> infixExpression = infixParse(data + multiplicationSymbol);
+            EquationLabel.setText(infixArrToStr(infixExpression));
         });
         Dot.addActionListener(e ->
 
         {
             String data = EquationLabel.getText();
             EquationLabel.setText(data + ".");
+
+
         });
     }
 
     private ArrayList<String> infixParse(String data) {
         ArrayList<String> resultArr = new ArrayList<>();
-        char[] dataInChar = data.toCharArray();
+        String[] dataInStr = data.split("");
         StringBuilder tempNumber = new StringBuilder();
-        for (char c : dataInChar) {
-            if (precedenceOfOperatorSign(String.valueOf(c)) == 0) {
-                tempNumber.append(c);
+        for (int i = 0; i < dataInStr.length; i++) {
+            String currentStr = dataInStr[i];
+            if (!isOperator(String.valueOf(currentStr))) {
+                if (currentStr.contains(".")) {
+                    if (i == 0 || isOperator(dataInStr[i - 1])) {
+                        tempNumber.append("0.");
+                    } else if (i < dataInStr.length - 1 && isOperator(dataInStr[i + 1])) {
+                        tempNumber.append(".0");
+                    } else {
+                        tempNumber.append(currentStr);
+                    }
+                } else {
+                    tempNumber.append(currentStr);
+                }
+
             } else {
 
                 resultArr.add(tempNumber.toString());
-                resultArr.add(String.valueOf(c));
+                resultArr.add(String.valueOf(currentStr));
                 tempNumber = new StringBuilder();
             }
         }
@@ -285,11 +337,22 @@ public class Calculator extends JFrame {
         }
     }
 
+    private boolean isOperator(String str) {
+        switch (str.toCharArray()[0]) {
+            case subtractionSymbol, additionSymbol, multiplicationSymbol, divisionSymbol -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
+
     private String calculatePostfixExpression(ArrayList<String> expression) {
         Stack<Double> stackDouble = new Stack<>();
         for (String currentStr : expression
         ) {
-            if (precedenceOfOperatorSign(currentStr) == 0) {
+            if (!isOperator(currentStr)) {
                 stackDouble.push(Double.parseDouble(currentStr));
             } else {
                 double number1 = stackDouble.pop();
@@ -307,11 +370,23 @@ public class Calculator extends JFrame {
         }
 
         double resultNumber = stackDouble.pop();
-        if (resultNumber % 1 == 0) {
-            return String.valueOf((int) resultNumber);
-        }
-        return String.valueOf(resultNumber);
+        return resultNumber % 1 == 0 ? String.valueOf((int) resultNumber) : String.valueOf(resultNumber);
     }
+
+    private boolean isLastSymbolOperator(String str) {
+        String[] strArr = str.split("");
+        return isOperator(strArr[strArr.length - 1]);
+    }
+
+    private String infixArrToStr(ArrayList<String> arrayListStr) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String currentStr : arrayListStr
+        ) {
+            stringBuilder.append(currentStr);
+        }
+        return stringBuilder.toString();
+    }
+
 }
 
 
